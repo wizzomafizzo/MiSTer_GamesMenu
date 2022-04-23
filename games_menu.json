@@ -1,0 +1,19 @@
+{
+    "base_files_url": "",
+    "db_files": [],
+    "db_id": "games_menu",
+    "db_url": "https://raw.githubusercontent.com/wizzomafizzo/MiSTer_GamesMenu/main/games_menu.json",
+    "default_options": {},
+    "files": {
+        "Scripts/bgm.sh": {
+            "hash": "fb2dcb9d88b7620e92d63afdb3267686",
+            "size": 8355,
+            "url": "https://raw.githubusercontent.com/wizzomafizzo/MiSTer_GamesMenu/main/games_menu.sh"
+        }
+    },
+    "folders": {
+        "Scripts": {}
+    },
+    "timestamp": 1650725206,
+    "zips": {}
+}
