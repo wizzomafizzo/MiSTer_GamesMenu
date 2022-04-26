@@ -8,9 +8,13 @@ import sys
 GAMES_MENU_PATH = "/media/fat/_Games"
 NAMES_FILE = "/media/fat/names.txt"
 
+# TODO: combined meta folders for smokemonster packs?
+# TODO: configurable games menu location including root?
+# TODO: check broken rom pack from flynn
+
 # (<games folder name>, <rbf>, (<file extensions>[], <delay>, <type>, <index>)[])
 MGL_MAP = (
-    ("ATARI2600", "_Console/Atari7800", (({".a78", ".a26", ".bin"}, 1, "f", 1),)),
+    # ("ATARI2600", "_Console/Atari7800", (({".a78", ".a26", ".bin"}, 1, "f", 1),)),
     ("ATARI7800", "_Console/Atari7800", (({".a78", ".a26", ".bin"}, 1, "f", 1),)),
     ("AtariLynx", "_Console/AtariLynx", (({".lnx"}, 1, "f", 0),)),
     ("C64", "_Computer/C64", (({".prg", ".crt", ".reu", ".tap"}, 1, "f", 1),)),
@@ -206,44 +210,84 @@ def create_mgl_file(system_name, filename, mgl_args, sub_path):
 
 
 def display_menu(system_paths):
-    args = [
-        "dialog",
-        "--title",
-        "Games Menu",
-        "--cancel-label",
-        "Exit",
-        "--checklist",
-        "Select systems to show in Games menu.",
-        "20",
-        "75",
-        "20",
-    ]
+    systems = {}
+    max_name_len = 0
+    last_item = ""
 
-    for system in sorted(system_paths.keys(), key=str.lower):
-        display_name = get_names_replacement(system)
-        args.append(str(system))
-        args.append(str(display_name))
-        if os.path.exists(os.path.join(GAMES_MENU_PATH, "_" + display_name)):
-            args.append("on")
+    for name in system_paths.keys():
+        display_name = get_names_replacement(name)
+        if len(display_name) > max_name_len:
+            max_name_len = len(display_name)
+
+        if os.path.exists(os.path.join(GAMES_MENU_PATH, "_" + display_name)) or not os.path.exists(GAMES_MENU_PATH):
+            selected = True
         else:
-            args.append("off")
+            selected = False
 
-    result = subprocess.run(args, stderr=subprocess.PIPE)
+        systems[name] = {
+            "display_name": display_name,
+            "selected": selected,
+        }
 
-    button = result.returncode
-    selection = result.stderr.decode()
+    def menu():
+        args = [
+            "dialog",
+            "--title",
+            "Games Menu",
+            "--ok-label",
+            "Toggle",
+            "--cancel-label",
+            "Exit",
+            "--extra-button",
+            "--extra-label",
+            "Generate Menu",
+            "--default-item",
+            str(last_item),
+            "--menu",
+            "Select systems to show in Games menu.",
+            "20",
+            "75",
+            "20",
+        ]
 
-    return button, selection
+        for name in sorted(systems.keys(), key=str.lower):
+            args.append(str(name))
+            display_str = systems[name]["display_name"].ljust(max_name_len + 2)
+            if systems[name]["selected"]:
+                display_str = display_str + "[YES]"
+            else:
+                display_str = display_str + " [NO]"
+            args.append(str(display_str))
+
+        result = subprocess.run(args, stderr=subprocess.PIPE)
+
+        button = result.returncode
+        selection = result.stderr.decode()
+
+        return button, selection
+
+    button, selection = menu()
+    while button == 0:
+        systems[selection]["selected"] = not systems[selection]["selected"]
+        last_item = selection
+        button, selection = menu()
+
+    if button == 3:
+        selected = []
+        for k, v in systems.items():
+            if v["selected"]:
+                selected.append(k)
+        return selected
+    else:
+        return None
 
 
 if __name__ == "__main__":
     system_paths = get_system_paths()
-    button, selection = display_menu(system_paths)
+    systems = display_menu(system_paths)
     print("")
 
-    if button == 0:
-        systems = selection.split(" ")
-
+    if systems is not None:
         if len(systems) == 0 or systems[0] == "":
             sys.exit(0)
 
