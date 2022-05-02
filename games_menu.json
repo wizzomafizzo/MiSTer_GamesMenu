@@ -5,7 +5,7 @@
     "db_url": "https://raw.githubusercontent.com/wizzomafizzo/MiSTer_GamesMenu/main/games_menu.json",
     "default_options": {},
     "files": {
-        "Scripts/bgm.sh": {
+        "Scripts/games_menu.sh": {
             "hash": "fb2dcb9d88b7620e92d63afdb3267686",
             "size": 8355,
             "url": "https://raw.githubusercontent.com/wizzomafizzo/MiSTer_GamesMenu/main/games_menu.sh"
