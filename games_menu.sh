@@ -4,16 +4,17 @@ import os
 import zipfile
 import subprocess
 import sys
+import shutil
 
 GAMES_MENU_PATH = "/media/fat/_Games"
 NAMES_FILE = "/media/fat/names.txt"
 
 # TODO: combined meta folders for smokemonster packs?
-# TODO: check broken rom pack from flynn
+# TODO: check broken rom pack from flynn?
 # TODO: update screenshots
-# TODO: delete deselected systems
 # TODO: move up files in folders with only one item
 # TODO: cleanup mgl files with broken links
+# TODO: total added/synced stat numbers
 
 # (<games folder name>, <rbf>, (<file extensions>[], <delay>, <type>, <index>)[])[]
 MGL_MAP = (
@@ -300,8 +301,12 @@ if __name__ == "__main__":
         if len(systems) == 0 or systems[0] == "":
             sys.exit(0)
 
+        folder_names = []
+
+        # add/update systems
         for system in systems:
             folder_name = get_names_replacement(system)
+            folder_names.append("_" + folder_name)
             print("Scanning {} ({})...".format(system, folder_name), end="", flush=True)
             count = 0
             for folder in system_paths[system]:
@@ -313,5 +318,12 @@ if __name__ == "__main__":
                     else:
                         count += 1
             print("Done!", flush=True)
+
+        # delete systems
+        for folder in os.listdir(GAMES_MENU_PATH):
+            path = os.path.join(GAMES_MENU_PATH, folder)
+            if os.path.isdir(path) and folder not in folder_names:
+                print("Removing {}...".format(folder), end="", flush=True)
+                print("Done!", flush=True)
 
     sys.exit(0)
