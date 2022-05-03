@@ -10,7 +10,6 @@ GAMES_MENU_PATH = "/media/fat/_Games"
 NAMES_FILE = "/media/fat/names.txt"
 
 # TODO: combined meta folders for smokemonster packs?
-# TODO: check broken rom pack from flynn?
 # TODO: update screenshots
 # TODO: move up files in folders with only one item
 # TODO: cleanup mgl files with broken links
@@ -324,6 +323,7 @@ if __name__ == "__main__":
             path = os.path.join(GAMES_MENU_PATH, folder)
             if os.path.isdir(path) and folder not in folder_names:
                 print("Removing {}...".format(folder), end="", flush=True)
+                shutil.rmtree(path)
                 print("Done!", flush=True)
 
     sys.exit(0)
