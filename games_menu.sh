@@ -9,10 +9,13 @@ GAMES_MENU_PATH = "/media/fat/_Games"
 NAMES_FILE = "/media/fat/names.txt"
 
 # TODO: combined meta folders for smokemonster packs?
-# TODO: configurable games menu location including root?
 # TODO: check broken rom pack from flynn
+# TODO: update screenshots
+# TODO: delete deselected systems
+# TODO: move up files in folders with only one item
+# TODO: cleanup mgl files with broken links
 
-# (<games folder name>, <rbf>, (<file extensions>[], <delay>, <type>, <index>)[])
+# (<games folder name>, <rbf>, (<file extensions>[], <delay>, <type>, <index>)[])[]
 MGL_MAP = (
     # ("ATARI2600", "_Console/Atari7800", (({".a78", ".a26", ".bin"}, 1, "f", 1),)),
     ("ATARI7800", "_Console/Atari7800", (({".a78", ".a26", ".bin"}, 1, "f", 1),)),
@@ -74,8 +77,14 @@ def get_names_replacement(name: str):
         for entry in f:
             if ":" in entry:
                 system, replacement = entry.split(":", maxsplit=1)
+                replacement = replacement.strip()
                 if system.strip().lower() == name.lower():
-                    return replacement.strip().replace("/", " & ")
+                    # remove illegal filename characters
+                    replacement = replacement.replace("/", " & ")
+                    for char in '<>:"/\|?*':
+                        if char in replacement:
+                            replacement = replacement.replace(char, " ")
+                    return replacement
     return name
 
 
@@ -304,9 +313,5 @@ if __name__ == "__main__":
                     else:
                         count += 1
             print("Done!", flush=True)
-
-        # TODO: delete deselected systems
-        # TODO: move up files in folders with only one item
-        # TODO: cleanup mgl files with broken links
 
     sys.exit(0)
