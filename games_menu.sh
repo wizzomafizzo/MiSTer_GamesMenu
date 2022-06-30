@@ -9,11 +9,10 @@ import shutil
 GAMES_MENU_PATH = "/media/fat/_Games"
 NAMES_FILE = "/media/fat/names.txt"
 
-# TODO: combined meta folders for smokemonster packs?
-# TODO: update screenshots
-# TODO: move up files in folders with only one item
+# TODO: combined meta folders for HTGDB packs
 # TODO: cleanup mgl files with broken links
-# TODO: total added/synced stat numbers
+# TODO: link combined systems to the top level (game gear, mega duck etc.)
+# TODO: update screenshots
 
 # (<games folder name>, <rbf>, (<file extensions>[], <delay>, <type>, <index>)[])[]
 MGL_MAP = (
@@ -26,7 +25,9 @@ MGL_MAP = (
         "_Console/ColecoVision",
         (({".col", ".bin", ".rom", ".sg"}, 1, "f", 0),),
     ),
+    ("GAMEBOY2P", "_Console/Gameboy2P", (({".gb", ".gbc"}, 1, "f", 1),)),
     ("GAMEBOY", "_Console/Gameboy", (({".gb", ".gbc"}, 1, "f", 1),)),
+    ("GBA2P", "_Console/GBA2P", (({".gba"}, 1, "f", 0),)),
     ("GBA", "_Console/GBA", (({".gba"}, 1, "f", 0),)),
     ("Genesis", "_Console/Genesis", (({".bin", ".gen", ".md"}, 1, "f", 0),)),
     ("MegaCD", "_Console/MegaCD", (({".cue", ".chd"}, 1, "s", 0),)),
@@ -41,17 +42,17 @@ MGL_MAP = (
     ("SMS", "_Console/SMS", (({".sms", ".sg"}, 1, "f", 1), ({".gg"}, 1, "f", 2))),
     ("SNES", "_Console/SNES", (({".sfc", ".smc"}, 2, "f", 0),)),
     (
+        "TGFX16-CD",
+        "_Console/TurboGrafx16",
+        (({".cue", ".chd"}, 1, "s", 0),),
+    ),
+    (
         "TGFX16",
         "_Console/TurboGrafx16",
         (
             ({".pce", ".bin"}, 1, "f", 0),
             ({".sgx"}, 1, "f", 1),
         ),
-    ),
-    (
-        "TGFX16-CD",
-        "_Console/TurboGrafx16",
-        (({".cue", ".chd"}, 1, "s", 0),),
     ),
     ("VECTREX", "_Console/Vectrex", (({".ovr", ".vec", ".bin", ".rom"}, 1, "f", 1),)),
     ("WonderSwan", "_Console/WonderSwan", (({".wsc", ".ws"}, 1, "f", 1),)),
@@ -216,6 +217,9 @@ def create_mgl_file(system_name, filename, mgl_args, sub_path):
         with open(mgl_path, "w") as f:
             mgl = generate_mgl(*mgl_args)
             f.write(mgl)
+        return True
+    else:
+        return False
 
 
 def display_menu(system_paths):
@@ -302,6 +306,9 @@ if __name__ == "__main__":
 
         folder_names = []
 
+        scanned = 0
+        added = 0
+
         # add/update systems
         for system in systems:
             folder_name = get_names_replacement(system)
@@ -310,13 +317,19 @@ if __name__ == "__main__":
             count = 0
             for folder in system_paths[system]:
                 for file in get_system_files(system, folder):
-                    create_mgl_file(folder_name, file[1], file[2], file[3])
+                    created = create_mgl_file(folder_name, file[1], file[2], file[3])
+
+                    scanned += 1
+                    if created:
+                        added += 1
+
                     if count >= 250:
                         print(".", end="", flush=True)
                         count = 0
                     else:
                         count += 1
             print("Done!", flush=True)
+        print("Scanned {} games, created {} shortcuts.".format(scanned, added), flush=True)
 
         # delete systems
         for folder in os.listdir(GAMES_MENU_PATH):
