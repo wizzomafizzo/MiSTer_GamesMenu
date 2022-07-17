@@ -5,14 +5,18 @@ import zipfile
 import subprocess
 import sys
 import shutil
+import re
+import math
 
 GAMES_MENU_PATH = "/media/fat/_Games"
 NAMES_FILE = "/media/fat/names.txt"
+NAMES_CACHE = {}
+MENU_CACHE = {}
 
 # TODO: combined meta folders for HTGDB packs
 # TODO: cleanup mgl files with broken links
 # TODO: link combined systems to the top level (game gear, mega duck etc.)
-# TODO: update screenshots
+# TODO: update screenshots, readme
 
 # (<games folder name>, <rbf>, (<file extensions>[], <delay>, <type>, <index>)[])[]
 MGL_MAP = (
@@ -39,6 +43,7 @@ MGL_MAP = (
     ("NES", "_Console/NES", (({".nes", ".fds", ".nsf"}, 1, "f", 0),)),
     ("PSX", "_Console/PSX", (({".cue", ".chd"}, 1, "s", 1),)),
     ("S32X", "_Console/S32X", (({".32x"}, 1, "f", 0),)),
+    ("SGB", "_Console/SGB", (({".gb", ".gbc"}, 1, "f", 1),)),
     ("SMS", "_Console/SMS", (({".sms", ".sg"}, 1, "f", 1), ({".gg"}, 1, "f", 2))),
     ("SNES", "_Console/SNES", (({".sfc", ".smc"}, 2, "f", 0),)),
     (
@@ -72,6 +77,8 @@ GAMES_FOLDERS = (
 
 
 def get_names_replacement(name: str):
+    if name in NAMES_CACHE:
+        return NAMES_CACHE[name]
     if not os.path.exists(NAMES_FILE):
         return name
     with open(NAMES_FILE, "r") as f:
@@ -85,14 +92,28 @@ def get_names_replacement(name: str):
                     for char in '<>:"/\|?*':
                         if char in replacement:
                             replacement = replacement.replace(char, " ")
+                    NAMES_CACHE[name] = replacement
                     return replacement
     return name
+
+
+def folder_name(system_name):
+    return "_" + get_names_replacement(system_name)
 
 
 # generate XML contents for MGL file
 def generate_mgl(rbf, delay, type, index, path):
     mgl = '<mistergamedescription>\n\t<rbf>{}</rbf>\n\t<file delay="{}" type="{}" index="{}" path="../../../..{}"/>\n</mistergamedescription>'
     return mgl.format(rbf, delay, type, index, path)
+
+
+def get_mgl_target(path):
+    with open(path, "r") as f:
+        match = re.search(r'path="\.\./\.\./\.\./\.\.(.+)"', f.read())
+        if match:
+            return match.group(1)
+        else:
+            return ""
 
 
 def get_system(name: str):
@@ -103,7 +124,7 @@ def get_system(name: str):
 
 
 def match_system_file(system, filename):
-    name, ext = os.path.splitext(filename)
+    _, ext = os.path.splitext(filename)
     for type in system[2]:
         if ext.lower() in type[0]:
             return type
@@ -143,13 +164,6 @@ def get_system_paths():
     return systems
 
 
-def type_has_zip(mgl_types):
-    for type in mgl_types:
-        if ".zip" in type[0]:
-            return True
-    return False
-
-
 def to_mgl_args(system, match, full_path):
     return (
         system[1],
@@ -161,54 +175,55 @@ def to_mgl_args(system, match, full_path):
 
 
 # return a generator for all valid system roms
-# (<system name>, <parent folder>, <filename>, <mgl args>, <sub path>)
+# (<system>, <full path>, <relative folder>, <mgl filename>, match)[]
 def get_system_files(name, folder):
     system = get_system(name)
-    for root, dirs, files in os.walk(folder):
+    for root, _, files in os.walk(folder):
         for filename in files:
-            full_path = os.path.join(root, filename)
-            if (
-                filename.lower().endswith(".zip")
-                and not type_has_zip(system[2])
-                and zipfile.is_zipfile(full_path)
-            ):
+            path = os.path.join(root, filename)
+            if filename.lower().endswith(".zip") and zipfile.is_zipfile(path):
                 # zip files
-                zip = zipfile.ZipFile(full_path)
-                for zip_filename in zip.namelist():
-                    # only top level files
-                    if os.path.sep not in zip_filename:
-                        match = match_system_file(system, zip_filename)
-                        if match is not None:
-                            sub_path = root.replace(folder, "").lstrip(os.path.sep)
-                            yield system[0], zip_filename, to_mgl_args(
-                                system, match, os.path.join(full_path, zip_filename)
-                            ), sub_path
+                for zip_path in zipfile.ZipFile(path).namelist():
+                    match = match_system_file(system, zip_path)
+                    if match:
+                        full_path = os.path.join(path, zip_path)
+                        rel_path = (
+                            os.path.join(root, os.path.dirname(zip_path))
+                            .replace(folder, "")
+                            .lstrip("/")
+                        )
+                        yield (
+                            system,
+                            full_path,
+                            rel_path,
+                            os.path.basename(zip_path),
+                            match,
+                        )
             else:
                 # regular files
                 match = match_system_file(system, filename)
                 if match is not None:
-                    sub_path = root.replace(folder, "").lstrip(os.path.sep)
-                    yield system[0], filename, to_mgl_args(
-                        system, match, full_path
-                    ), sub_path
+                    rel_path = root.replace(folder, "").lstrip("/")
+                    yield (system, path, rel_path, filename, match)
 
 
 # format menu folder names to show in menu core
 def menu_format(sub_path):
+    if sub_path in MENU_CACHE:
+        return MENU_CACHE[sub_path]
     folders = sub_path.split(os.path.sep)
-    return os.path.sep.join(["_" + x for x in folders])
+    path = "/".join([folder_name(x) for x in folders])
+    MENU_CACHE[sub_path] = path
+    return path
 
 
 def mgl_name(filename):
-    name, ext = os.path.splitext(filename)
+    name, _ = os.path.splitext(filename)
     return name + ".mgl"
 
 
 def create_mgl_file(system_name, filename, mgl_args, sub_path):
-    if sub_path == "":
-        rel_path = system_name
-    else:
-        rel_path = os.path.join(system_name, sub_path)
+    rel_path = os.path.join(system_name, sub_path).rstrip("/")
     mgl_folder = os.path.join(GAMES_MENU_PATH, menu_format(rel_path))
     mgl_path = os.path.join(mgl_folder, mgl_name(filename))
     if not os.path.exists(mgl_folder):
@@ -222,6 +237,66 @@ def create_mgl_file(system_name, filename, mgl_args, sub_path):
         return False
 
 
+def dialog_env():
+    return dict(os.environ, DIALOGRC="/media/fat/Scripts/.dialogrc")
+
+
+def display_message(msg, info=False, height=5, title="Games Menu"):
+    if info:
+        type = "--infobox"
+    else:
+        type = "--msgbox"
+
+    args = [
+        "dialog",
+        "--title",
+        title,
+        "--ok-label",
+        "Ok",
+        type,
+        msg,
+        str(height),
+        "75",
+    ]
+
+    subprocess.run(args, env=dialog_env())
+
+
+def display_generate_mgls(system_names):
+    system_paths = get_system_paths()
+    system_names = [x for x in system_names if not x.startswith("ZOPT")]
+
+    # display_message(
+    #     "",
+    #     height=6,
+    #     title="Creating Index",
+    # )
+
+    def display_progress(msg, pct):
+        args = [
+            "dialog",
+            "--title",
+            "Creating MGL files...",
+            "--gauge",
+            msg,
+            "6",
+            "75",
+            str(pct),
+        ]
+        progress = subprocess.Popen(args, env=dialog_env(), stdin=subprocess.PIPE)
+        progress.communicate("".encode())
+
+    for i, system_name in enumerate(system_names):
+        for folder in system_paths[system_name]:
+            pct = math.ceil(i / len(systems) * 100)
+            display_progress(f"Scanning {get_names_replacement(system_name)} ({folder})", pct)
+            for system, path, parent, filename, match in get_system_files(
+                system_name, folder
+            ):
+                mgl_args = to_mgl_args(system, match, path)
+                created = create_mgl_file(system_name, filename, mgl_args, parent)
+    display_progress(f"Scanning {get_names_replacement(system_name)} ({folder})", 100)
+
 def display_menu(system_paths):
     systems = {}
     max_name_len = 0
@@ -229,10 +304,10 @@ def display_menu(system_paths):
 
     for name in system_paths.keys():
         display_name = get_names_replacement(name)
-        if len(display_name) > max_name_len:
-            max_name_len = len(display_name)
 
-        if os.path.exists(os.path.join(GAMES_MENU_PATH, "_" + display_name)) or not os.path.exists(GAMES_MENU_PATH):
+        if os.path.exists(
+            os.path.join(GAMES_MENU_PATH, folder_name(display_name))
+        ) or not os.path.exists(GAMES_MENU_PATH):
             selected = True
         else:
             selected = False
@@ -241,6 +316,11 @@ def display_menu(system_paths):
             "display_name": display_name,
             "selected": selected,
         }
+
+    for system in systems.values():
+        name_len = len(system["display_name"])
+        if name_len > max_name_len:
+            max_name_len = name_len
 
     def menu():
         args = [
@@ -257,7 +337,7 @@ def display_menu(system_paths):
             "--default-item",
             str(last_item),
             "--menu",
-            "Select systems to show in Games menu.",
+            "Select systems to show in Games menu:",
             "20",
             "75",
             "20",
@@ -272,7 +352,7 @@ def display_menu(system_paths):
                 display_str = display_str + " [NO]"
             args.append(str(display_str))
 
-        result = subprocess.run(args, stderr=subprocess.PIPE)
+        result = subprocess.run(args, env=dialog_env(), stderr=subprocess.PIPE)
 
         button = result.returncode
         selection = result.stderr.decode()
@@ -304,39 +384,19 @@ if __name__ == "__main__":
         if len(systems) == 0 or systems[0] == "":
             sys.exit(0)
 
-        folder_names = []
-
-        scanned = 0
-        added = 0
-
-        # add/update systems
-        for system in systems:
-            folder_name = get_names_replacement(system)
-            folder_names.append("_" + folder_name)
-            print("Scanning {} ({})...".format(system, folder_name), end="", flush=True)
-            count = 0
-            for folder in system_paths[system]:
-                for file in get_system_files(system, folder):
-                    created = create_mgl_file(folder_name, file[1], file[2], file[3])
-
-                    scanned += 1
-                    if created:
-                        added += 1
-
-                    if count >= 250:
-                        print(".", end="", flush=True)
-                        count = 0
-                    else:
-                        count += 1
-            print("Done!", flush=True)
-        print("Scanned {} games, created {} shortcuts.".format(scanned, added), flush=True)
+        if not os.path.exists(GAMES_MENU_PATH):
+            os.mkdir(GAMES_MENU_PATH)
 
         # delete systems
+        all_folders = [folder_name(x) for x in systems if not x.startswith("ZOPT")]
         for folder in os.listdir(GAMES_MENU_PATH):
             path = os.path.join(GAMES_MENU_PATH, folder)
-            if os.path.isdir(path) and folder not in folder_names:
-                print("Removing {}...".format(folder), end="", flush=True)
+            if os.path.isdir(path) and folder not in all_folders:
+                print(f"Removing {folder} ...", end="", flush=True)
                 shutil.rmtree(path)
-                print("Done!", flush=True)
+                print(" Done!", flush=True)
+
+        # add/update systems
+        display_generate_mgls(systems)
 
     sys.exit(0)

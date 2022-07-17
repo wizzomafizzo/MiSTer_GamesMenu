@@ -1,6 +1,6 @@
 # MiSTer Games Menu
 
-Launch and browse games directly from the MiSTer menu. Games Menu scans your game collection, and creates a set launchers in the menu which match your collection's folder layout.
+Launch and browse games directly from the MiSTer menu. Games Menu scans your game collection, and creates a set of launchers in the menu which match your collection's folder layout.
 
 This script works well with the [Favorites](https://github.com/wizzomafizzo/MiSTer_Favorites) and [BGM](https://github.com/wizzomafizzo/MiSTer_BGM) scripts.
 
