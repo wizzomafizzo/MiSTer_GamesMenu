@@ -1,12 +1,14 @@
 # MiSTer Games Menu
 
+**This script has been renamed. It's now called `gamesmenu.sh` instead of `games_menu.sh`. You can keep your original updater entry but you'll need to delete the old `games_menu.sh` file. Sorry!**
+
 Launch and browse games directly from the MiSTer menu. Games Menu scans your game collection, and creates a set of launchers in the menu which match your collection's folder layout.
 
-This script works well with the [Favorites](https://github.com/wizzomafizzo/MiSTer_Favorites) and [BGM](https://github.com/wizzomafizzo/MiSTer_BGM) scripts.
+Check out [MiSTer Extensions](https://github.com/wizzomafizzo/mrext) for other useful scripts!
 
 ## Installation
 
-Copy the [games_menu.sh](https://github.com/wizzomafizzo/MiSTer_GamesMenu/raw/main/games_menu.sh) file to your SD card's `Scripts` folder.
+Copy the [games_menu.sh](https://github.com/wizzomafizzo/MiSTer_GamesMenu/raw/main/gamesmenu.sh) file to your SD card's `Scripts` folder.
 
 Run `games_menu` from the Scripts menu.
 
