@@ -8,6 +8,8 @@ Check out [MiSTer Extensions](https://github.com/wizzomafizzo/mrext) for other u
 
 ## Installation
 
+**WARNING: Due to a limitation with MiSTer's filesystem, a fully generated Games menu can take WAY more space than you think, even though the actual file size is very small. If you have a large collection of games (for example all the HTGDB packs) expect to use up to 10GB of space for this script with all systems selected. The space used reflects number of game files, not how big there are.**
+
 Copy the [games_menu.sh](https://github.com/wizzomafizzo/MiSTer_GamesMenu/raw/main/gamesmenu.sh) file to your SD card's `Scripts` folder.
 
 Run `games_menu` from the Scripts menu.
