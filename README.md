@@ -5,18 +5,31 @@ parsing "romsets.xml" for attributes "name" and "altname". the idea is, to use t
 e.g.:
 
 2020bb <---> 2020 Super Baseball
+
 2020bba <---> 2020 Super Baseball (set 2)
+
 2020bbh <---> 2020 Super Baseball (set 3)
+
 3countb <---> 3 Count Bout
+
 alpham2 <---> Alpha Mission II
+
 alpham2p <---> Alpha Mission II (prototype)
+
 androdun <---> Andro Dunos
+
 aodk <---> Aggressors of Dark Kombat
+
 aof <---> Art of Fighting
+
 aof2 <---> Art of Fighting 2
+
 aof2a <---> Art of Fighting 2 (NGH-056)
+
 aof3 <---> Art of Fighting 3: The Path of the Warrior
+
 aof3k <---> Art of Fighting 3: The Path of the Warrior (Korean release)
+
 b2b <---> Bang Bang Busters
 bakatono <---> Bakatonosama Mahjong Manyuuki
 bangbead <---> Bang Bead
