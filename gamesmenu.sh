@@ -61,7 +61,8 @@ MGL_MAP = (
         ),
     ),
     ("VECTREX", "_Console/Vectrex", (({".ovr", ".vec", ".bin", ".rom"}, 1, "f", 1),)),
-    ("WonderSwan", "_Console/WonderSwan", (({".wsc", ".ws"}, 1, "f", 1),)),
+    ("WonderSwan", "_Console/WonderSwan", (({".ws"}, 1, "f", 1),)),
+    ("WonderSwanColor", "_Console/WonderSwan", (({".wsc"}, 1, "f", 1),)),
 )
 
 # source: https://mister-devel.github.io/MkDocs_MiSTer/cores/paths/#path-priority
