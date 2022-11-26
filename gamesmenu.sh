@@ -73,6 +73,7 @@ GAMES_FOLDERS = (
     "/media/usb4",
     "/media/usb5",
     "/media/fat/cifs",
+    "/media/fat/games",
 )
 
 
