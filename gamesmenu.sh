@@ -135,31 +135,21 @@ def get_system_paths():
     systems = {}
 
     def add_system(name, folder):
-        path = os.path.join(folder, name)
         if name in systems:
-            systems[name].append(path)
+            systems[name].append(folder)
         else:
-            systems[name] = [path]
+            systems[name] = [folder]
 
-    def find_folders(path):
+    def check_folder(path):
         if not os.path.exists(path) or not os.path.isdir(path):
             return False
-
-        for folder in os.listdir(path):
-            system = get_system(folder)
-            if os.path.isdir(os.path.join(path, folder)) and system:
-                add_system(system[0], path)
-
         return True
 
-    for games_path in GAMES_FOLDERS:
-        parent = find_folders(games_path)
-        if not parent:
-            break
-
-        for subpath in os.listdir(games_path):
-            if subpath.lower() == "games":
-                find_folders(os.path.join(games_path, subpath))
+    for system in MGL_MAP:
+        for games_path in GAMES_FOLDERS:
+            games_path = os.path.join(games_path, system[0])
+            if check_folder(games_path):
+                add_system(system[0], games_path)
 
     return systems
 
