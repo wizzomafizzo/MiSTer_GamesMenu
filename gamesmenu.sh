@@ -33,6 +33,7 @@ MGL_MAP = (
     ("GAMEBOY", "_Console/Gameboy", (({".gb", ".gbc"}, 1, "f", 1),)),
     ("GBA2P", "_Console/GBA2P", (({".gba"}, 1, "f", 0),)),
     ("GBA", "_Console/GBA", (({".gba"}, 1, "f", 0),)),
+    ("GameGear", "_Console/SMS", (({".gg"}, 1, "f", 2),)),
     ("Genesis", "_Console/Genesis", (({".bin", ".gen", ".md"}, 1, "f", 0),)),
     ("MegaCD", "_Console/MegaCD", (({".cue", ".chd"}, 1, "s", 0),)),
     (
@@ -44,7 +45,7 @@ MGL_MAP = (
     ("PSX", "_Console/PSX", (({".cue", ".chd"}, 1, "s", 1),)),
     ("S32X", "_Console/S32X", (({".32x"}, 1, "f", 0),)),
     ("SGB", "_Console/SGB", (({".gb", ".gbc"}, 1, "f", 1),)),
-    ("SMS", "_Console/SMS", (({".sms", ".sg"}, 1, "f", 1), ({".gg"}, 1, "f", 2))),
+    ("SMS", "_Console/SMS", (({".sms", ".sg"}, 1, "f", 1),)),
     ("SNES", "_Console/SNES", (({".sfc", ".smc"}, 2, "f", 0),)),
     (
         "TGFX16-CD",
