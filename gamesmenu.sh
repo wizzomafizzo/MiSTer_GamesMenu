@@ -29,10 +29,13 @@ MGL_MAP = (
         "_Console/ColecoVision",
         (({".col", ".bin", ".rom", ".sg"}, 1, "f", 0),),
     ),
-    ("GAMEBOY2P", "_Console/Gameboy2P", (({".gb", ".gbc"}, 1, "f", 1),)),
-    ("GAMEBOY", "_Console/Gameboy", (({".gb", ".gbc"}, 1, "f", 1),)),
+    ("GAMEBOY2P", "_Console/Gameboy2P", (({".gb",".gbc"}, 1, "f", 1),)),
+    ("GAMEBOY", "_Console/Gameboy", (({".gb"}, 1, "f", 1),)),
+    ("GBC", "_Console/Gameboy", (({".gbc"}, 1, "f", 1),)),
     ("GBA2P", "_Console/GBA2P", (({".gba"}, 1, "f", 0),)),
     ("GBA", "_Console/GBA", (({".gba"}, 1, "f", 0),)),
+    ("GameGear", "_Console/SMS", (({".gg"}, 1, "f", 2),)),
+    ("Genesis", "_Console/Genesis", (({".bin", ".gen", ".md"}, 1, "f", 0),)),
     ("MegaDrive", "_Console/MegaDrive", (({".bin", ".gen", ".md"}, 1, "f", 1),)),
     ("MegaCD", "_Console/MegaCD", (({".cue", ".chd"}, 1, "s", 0),)),
     (
@@ -44,7 +47,7 @@ MGL_MAP = (
     ("PSX", "_Console/PSX", (({".cue", ".chd"}, 1, "s", 1),)),
     ("S32X", "_Console/S32X", (({".32x"}, 1, "f", 0),)),
     ("SGB", "_Console/SGB", (({".gb", ".gbc"}, 1, "f", 1),)),
-    ("SMS", "_Console/SMS", (({".sms", ".sg"}, 1, "f", 1), ({".gg"}, 1, "f", 2))),
+    ("SMS", "_Console/SMS", (({".sms", ".sg"}, 1, "f", 1),)),
     ("SNES", "_Console/SNES", (({".sfc", ".smc"}, 2, "f", 0),)),
     (
         "TGFX16-CD",
@@ -60,7 +63,8 @@ MGL_MAP = (
         ),
     ),
     ("VECTREX", "_Console/Vectrex", (({".ovr", ".vec", ".bin", ".rom"}, 1, "f", 1),)),
-    ("WonderSwan", "_Console/WonderSwan", (({".wsc", ".ws"}, 1, "f", 1),)),
+    ("WonderSwan", "_Console/WonderSwan", (({".ws"}, 1, "f", 1),)),
+    ("WonderSwanColor", "_Console/WonderSwan", (({".wsc"}, 1, "f", 1),)),
 )
 
 # source: https://mister-devel.github.io/MkDocs_MiSTer/cores/paths/#path-priority
@@ -73,6 +77,7 @@ GAMES_FOLDERS = (
     "/media/usb4",
     "/media/usb5",
     "/media/fat/cifs",
+    "/media/fat/games",
 )
 
 
@@ -135,31 +140,21 @@ def get_system_paths():
     systems = {}
 
     def add_system(name, folder):
-        path = os.path.join(folder, name)
         if name in systems:
-            systems[name].append(path)
+            systems[name].append(folder)
         else:
-            systems[name] = [path]
+            systems[name] = [folder]
 
-    def find_folders(path):
+    def check_folder(path):
         if not os.path.exists(path) or not os.path.isdir(path):
             return False
-
-        for folder in os.listdir(path):
-            system = get_system(folder)
-            if os.path.isdir(os.path.join(path, folder)) and system:
-                add_system(system[0], path)
-
         return True
 
-    for games_path in GAMES_FOLDERS:
-        parent = find_folders(games_path)
-        if not parent:
-            break
-
-        for subpath in os.listdir(games_path):
-            if subpath.lower() == "games":
-                find_folders(os.path.join(games_path, subpath))
+    for system in MGL_MAP:
+        for games_path in GAMES_FOLDERS:
+            games_path = os.path.join(games_path, system[0])
+            if check_folder(games_path):
+                add_system(system[0], games_path)
 
     return systems
 
