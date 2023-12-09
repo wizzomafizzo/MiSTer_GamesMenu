@@ -36,6 +36,7 @@ MGL_MAP = (
     ("GBA", "_Console/GBA", (({".gba"}, 1, "f", 0),)),
     ("GameGear", "_Console/SMS", (({".gg"}, 1, "f", 2),)),
     ("Genesis", "_Console/Genesis", (({".bin", ".gen", ".md"}, 1, "f", 0),)),
+    ("MegaDrive", "_Console/MegaDrive", (({".bin", ".gen", ".md"}, 1, "f", 1),)),
     ("MegaCD", "_Console/MegaCD", (({".cue", ".chd"}, 1, "s", 0),)),
     (
         "NEOGEO",
@@ -223,10 +224,13 @@ def create_mgl_file(system_name, filename, mgl_args, sub_path):
     if not os.path.exists(mgl_folder):
         os.makedirs(mgl_folder)
     if not os.path.exists(mgl_path):
-        with open(mgl_path, "w") as f:
-            mgl = generate_mgl(*mgl_args)
-            f.write(mgl)
-        return True
+        try:
+            with open(mgl_path, "w") as f:
+                mgl = generate_mgl(*mgl_args)
+                f.write(mgl)
+            return True
+        except OSError:
+            return False
     else:
         return False
 
