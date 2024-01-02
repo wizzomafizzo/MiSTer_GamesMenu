@@ -6,14 +6,14 @@
     "default_options": {},
     "files": {
         "Scripts/gamesmenu.sh": {
-            "hash": "39a2769370edd6b5c47c370a81f1c57e",
-            "size": 14912,
+            "hash": "2cd28985b7db4f37c11b55911f0e6f22",
+            "size": 15203,
             "url": "https://raw.githubusercontent.com/wizzomafizzo/MiSTer_GamesMenu/main/gamesmenu.sh"
         }
     },
     "folders": {
         "Scripts": {}
     },
-    "timestamp": 1702100763,
+    "timestamp": 1704195668,
     "zips": {}
 }
