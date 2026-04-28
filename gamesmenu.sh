@@ -31,7 +31,14 @@ MGL_MAP = (
         (({".car", ".a52", ".bin", ".rom"}, 1, "s", 1),),
     ),
     ("AtariLynx", "_Console/AtariLynx", (({".lnx"}, 1, "f", 0),)),
-    ("C64", "_Computer/C64", (({".prg", ".crt", ".reu", ".tap"}, 1, "f", 1),)),
+    (
+        "C64",
+        "_Computer/C64",
+        (
+            ({".prg", ".crt", ".reu", ".tap"}, 1, "f", 1),
+            ({".d64", ".t64", ".g64", ".d81"}, 1, "s", 0),
+        ),
+    ),
     ("ChannelF", "_Console/ChannelF", (({".rom", ".bin"}, 1, "f", 1),)),
     (
         "Coleco",
